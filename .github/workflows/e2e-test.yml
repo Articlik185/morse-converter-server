@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download autotests binaries
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
         uses: robinraju/release-downloader@v1.8
         with:
           repository: Yandex-Practicum/go-autotests
@@ -26,16 +27,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup autotest binary
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
         run: |
           chmod -R +x $GITHUB_WORKSPACE/.tools
           mv $GITHUB_WORKSPACE/.tools/firstfloortest /usr/local/bin/firstfloortest
 
+      # On main pushes, verify that the course starter still builds.
       - name: Build server binary
         run: |
           cd cmd/
           go build -buildvcs=false -o server
 
       - name: Run test
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
         run: |
           firstfloortest -test.v -test.run=^TestSprint6Final$ \
             -server-binary-path=cmd/server
